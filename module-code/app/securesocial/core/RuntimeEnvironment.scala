@@ -74,6 +74,8 @@ object RuntimeEnvironment {
       include(new GitHubProvider(routes, httpService, cacheService)),
       include(new GoogleProvider(routes, httpService, cacheService)),
       include(new InstagramProvider(routes, httpService, cacheService)),
+      include(new KakaoTalkProvider(routes, httpService, cacheService)),
+
       // include(new LinkedInOAuth2Provider(routes, httpService, cacheService)),
       include(new VkProvider(routes, httpService, cacheService)),
       // oauth 1 client providers
