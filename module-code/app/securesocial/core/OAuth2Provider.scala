@@ -158,6 +158,9 @@ abstract class OAuth2Provider(settings: OAuth2Settings,
 
   def authenticateForApi(implicit request: Request[AnyContent]): Future[AuthenticationResult] = {
     import ExecutionContext.Implicits.global
+    println("api auth")
+    println(request.body.asText)
+    println(request.body.asJson)
     val maybeCredentials = request.body.asJson flatMap {
       _.validate[LoginJson] match {
         case ok: JsSuccess[LoginJson] =>

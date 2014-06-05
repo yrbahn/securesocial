@@ -50,10 +50,14 @@ trait BaseLoginApi[U] extends SecureSocial[U] {
 
   def authenticate(providerId: String, builderId: String) = Action.async { implicit request =>
     import ExecutionContext.Implicits.global
+      println(request.body.asText)
+      println(builderId)
       val result = for (
         builder <- env.authenticatorService.find(builderId) ;
         provider <- env.providers.get(providerId) if provider.isInstanceOf[ApiSupport]
       ) yield {
+	println(builder)
+	println(provider)
         provider.asInstanceOf[ApiSupport].authenticateForApi.flatMap {
           case authenticated: Authenticated =>
             val profile = authenticated.profile
