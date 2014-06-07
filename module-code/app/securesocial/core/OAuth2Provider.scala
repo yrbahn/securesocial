@@ -24,7 +24,8 @@ import scala.collection.JavaConversions._
 import play.api.libs.ws.Response
 import scala.Some
 import scala.concurrent.{ExecutionContext, Future}
-import play.api.libs.json.{JsError, JsSuccess, Json}
+import play.api.libs.json._
+import play.api.libs.functional.syntax._
 import securesocial.core.services.{RoutesService, CacheService, HttpService}
 
 /**
@@ -143,8 +144,15 @@ abstract class OAuth2Provider(settings: OAuth2Settings,
 
   /**
    * A Reads instance for the OAuth2Info case class
+   * implicit val OAuth2InfoReads = Json.reads[OAuth2Info]
    */
-  implicit val OAuth2InfoReads = Json.reads[OAuth2Info]
+
+  implicit val OAuth2InfoReads : Reads[OAuth2Info] = ( 
+    (JsPath \ "access_token").read[String] and
+    (JsPath \ "token_type").readNullable[String] and
+    (JsPath \ "expires_in").readNullable[Int] and
+    (JsPath \ "refresh_token").readNullable[String] 
+  )(OAuth2Info.apply _)
 
   /**
    * A Reads instance for the LoginJson case class
@@ -158,9 +166,6 @@ abstract class OAuth2Provider(settings: OAuth2Settings,
 
   def authenticateForApi(implicit request: Request[AnyContent]): Future[AuthenticationResult] = {
     import ExecutionContext.Implicits.global
-    println("api auth")
-    println(request.body.asText)
-    println(request.body.asJson)
     val maybeCredentials = request.body.asJson flatMap {
       _.validate[LoginJson] match {
         case ok: JsSuccess[LoginJson] =>

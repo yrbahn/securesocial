@@ -17,7 +17,7 @@
 package securesocial.core.providers
 
 import play.api.Logger
-import play.api.libs.json.JsObject
+import play.api.libs.json._
 import securesocial.core._
 import play.api.libs.ws.Response
 import scala.concurrent.{ExecutionContext, Future}
@@ -33,7 +33,7 @@ class KakaoTalkProvider(routesService: RoutesService,
   extends OAuth2Provider(settings, routesService, httpService, cacheService)
 {
   val MeApi = "https://kapi.kakao.com/v1/user/me"
-  val Id = "id"
+  val uId = "id"
   val Properties = "properties"
   val NickName = "nickname"
   val Picture = "thumbnail_image"
@@ -50,12 +50,12 @@ class KakaoTalkProvider(routesService: RoutesService,
     httpService.url(MeApi).withHeaders("Authorization" -> ("Bearer %s" format(accessToken)),
       "Content-Type" -> "application/x-www-form-urlencoded").get().map {
       response =>
-        val me = response.json
-        val userId = (me \ Id).as[String]
+        val me : JsValue = response.json
+        val userId = (me \ uId).as[Int].toString()
         val properties = ( me \ Properties).as[JsObject]
         val nickname = (properties \ NickName).asOpt[String]
         val avatarUrl = (properties \ Url).asOpt[String]
-        BasicProfile(id, userId, None, None, nickname, None, avatarUrl, authMethod, oAuth2Info = Some(info))
+        BasicProfile(id, userId, None, None, nickname, Some(userId), avatarUrl, authMethod, oAuth2Info = Some(info))
 
     } recover {
       case e: AuthenticationException => throw e
